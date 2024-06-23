@@ -8,10 +8,6 @@ sql:
         package: "sqlc"
         out: "db/sqlc"
         sql_package: "pgx/v5"
-        # emit_empty_slices: true
-        # query_parameter_limit: 0
-
         emit_interface: true
         emit_json_tags: true
         emit_pointers_for_null_types: true
-        # emit_result_struct_pointers: true
