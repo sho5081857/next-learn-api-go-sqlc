@@ -27,9 +27,9 @@ type userUseCase struct {
 }
 
 type LoginResponse struct {
-	ID           pgtype.UUID `json:"id"`
-	Email        string      `json:"email"`
-	AccessToken  string      `json:"access_token"`
+	ID    pgtype.UUID `json:"id"`
+	Email string      `json:"email"`
+	Token string      `json:"token"`
 }
 
 type UserResponse struct {
@@ -91,9 +91,9 @@ func (uu *userUseCase) Login(user sqlc.User) (LoginResponse, error) {
 	}
 
 	resLogin := LoginResponse{
-		ID:           storedUser.ID,
-		Email:        storedUser.Email,
-		AccessToken:  tokenString,
+		ID:    storedUser.ID,
+		Email: storedUser.Email,
+		Token: tokenString,
 	}
 	return resLogin, nil
 }
