@@ -2,7 +2,7 @@ package controller
 
 import (
 	"net/http"
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 	"next-learn-go-sqlc/usecase"
 	"strconv"
 
@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type IInvoiceController interface {
+type InvoiceController interface {
 	GetLatestInvoices(c echo.Context) error
 	GetFilteredInvoices(c echo.Context) error
 	GetInvoiceCount(c echo.Context) error
@@ -23,10 +23,10 @@ type IInvoiceController interface {
 }
 
 type invoiceController struct {
-	iu usecase.IInvoiceUsecase
+	iu usecase.InvoiceUseCase
 }
 
-func NewInvoiceController(iu usecase.IInvoiceUsecase) IInvoiceController {
+func NewInvoiceController(iu usecase.InvoiceUseCase) InvoiceController {
 	return &invoiceController{iu}
 }
 
