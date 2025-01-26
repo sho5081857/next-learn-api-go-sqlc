@@ -43,5 +43,9 @@ tasks:
       - docker compose exec db bash -c 'PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRES_DB'
 
   sql-create:
-      cmds:
-        - docker compose exec -T db bash -c 'PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRES_DB' < _tools/first.sql
+    cmds:
+      - docker compose exec -T db bash -c 'PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRES_DB' < _tools/first.sql
+
+  sqlc-generate:
+    cmds:
+      - sqlc generate -f ./infrastructure/database/sqlc.yaml
