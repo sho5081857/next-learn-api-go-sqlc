@@ -1,18 +1,18 @@
 package validator
 
 import (
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-type IInvoiceValidator interface {
+type InvoiceValidator interface {
 	InvoiceValidate(invoice sqlc.Invoice) error
 }
 
 type invoiceValidator struct{}
 
-func NewInvoiceValidator() IInvoiceValidator {
+func NewInvoiceValidator() InvoiceValidator {
 	return &invoiceValidator{}
 }
 

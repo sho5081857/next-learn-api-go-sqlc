@@ -2,24 +2,24 @@ package usecase
 
 import (
 	"context"
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 )
 
-type ICustomerUsecase interface {
+type CustomerUseCase interface {
 	GetAllCustomers() ([]sqlc.GetAllCustomersRow, error)
 	GetFilteredCustomers(query string) ([]sqlc.GetFilteredCustomersRow, error)
 	GetCustomerCount() (int64, error)
 }
 
-type customerUsecase struct {
+type customerUseCase struct {
 	cq sqlc.Querier
 }
 
-func NewCustomerUsecase(cq sqlc.Querier) ICustomerUsecase {
-	return &customerUsecase{cq}
+func NewCustomerUseCase(cq sqlc.Querier) CustomerUseCase {
+	return &customerUseCase{cq}
 }
 
-func (cu *customerUsecase) GetAllCustomers() ([]sqlc.GetAllCustomersRow, error) {
+func (cu *customerUseCase) GetAllCustomers() ([]sqlc.GetAllCustomersRow, error) {
 	customers, err := cu.cq.GetAllCustomers(context.Background())
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (cu *customerUsecase) GetAllCustomers() ([]sqlc.GetAllCustomersRow, error) 
 	return customers, nil
 }
 
-func (cu *customerUsecase) GetFilteredCustomers(query string) ([]sqlc.GetFilteredCustomersRow, error) {
+func (cu *customerUseCase) GetFilteredCustomers(query string) ([]sqlc.GetFilteredCustomersRow, error) {
 	customers, err := cu.cq.GetFilteredCustomers(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (cu *customerUsecase) GetFilteredCustomers(query string) ([]sqlc.GetFiltere
 	return customers, nil
 }
 
-func (cu *customerUsecase) GetCustomerCount() (int64, error) {
+func (cu *customerUseCase) GetCustomerCount() (int64, error) {
 	count, err := cu.cq.GetCustomerCount(context.Background())
 	if err != nil {
 		return 0, err

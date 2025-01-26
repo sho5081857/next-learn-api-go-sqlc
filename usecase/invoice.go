@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 	"next-learn-go-sqlc/validator"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type IInvoiceUsecase interface {
+type InvoiceUseCase interface {
 	GetLatestInvoices() ([]sqlc.GetLatestInvoicesRow, error)
 	GetFilteredInvoices(query string, offset, limit int32) ([]sqlc.GetFilteredInvoicesRow, error)
 	GetInvoiceCount() (int64, error)
@@ -20,16 +20,16 @@ type IInvoiceUsecase interface {
 	DeleteInvoice(invoiceId pgtype.UUID) error
 }
 
-type invoiceUsecase struct {
+type invoiceUseCase struct {
 	iq sqlc.Querier
-	iv validator.IInvoiceValidator
+	iv validator.InvoiceValidator
 }
 
-func NewInvoiceUsecase(iq sqlc.Querier, iv validator.IInvoiceValidator) IInvoiceUsecase {
-	return &invoiceUsecase{iq, iv}
+func NewInvoiceUseCase(iq sqlc.Querier, iv validator.InvoiceValidator) InvoiceUseCase {
+	return &invoiceUseCase{iq, iv}
 }
 
-func (iu *invoiceUsecase) GetLatestInvoices() ([]sqlc.GetLatestInvoicesRow, error) {
+func (iu *invoiceUseCase) GetLatestInvoices() ([]sqlc.GetLatestInvoicesRow, error) {
 	invoices, err := iu.iq.GetLatestInvoices(context.Background())
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (iu *invoiceUsecase) GetLatestInvoices() ([]sqlc.GetLatestInvoicesRow, erro
 	return invoices, nil
 }
 
-func (iu *invoiceUsecase) GetFilteredInvoices(query string, offset, limit int32) ([]sqlc.GetFilteredInvoicesRow, error) {
+func (iu *invoiceUseCase) GetFilteredInvoices(query string, offset, limit int32) ([]sqlc.GetFilteredInvoicesRow, error) {
 	arg := sqlc.GetFilteredInvoicesParams{Name: query, Offset: offset, Limit: limit}
 	invoices, err := iu.iq.GetFilteredInvoices(context.Background(), arg)
 	if err != nil {
@@ -48,7 +48,7 @@ func (iu *invoiceUsecase) GetFilteredInvoices(query string, offset, limit int32)
 	return invoices, nil
 }
 
-func (iu *invoiceUsecase) GetInvoiceCount() (int64, error) {
+func (iu *invoiceUseCase) GetInvoiceCount() (int64, error) {
 	count, err := iu.iq.GetInvoiceCount(context.Background())
 	if err != nil {
 		return 0, err
@@ -56,7 +56,7 @@ func (iu *invoiceUsecase) GetInvoiceCount() (int64, error) {
 	return count, nil
 }
 
-func (iu *invoiceUsecase) GetInvoiceStatusCount() (int64, int64, error) {
+func (iu *invoiceUseCase) GetInvoiceStatusCount() (int64, int64, error) {
 	i, err := iu.iq.GetInvoiceStatusCount(context.Background())
 	if err != nil {
 		return 0, 0, err
@@ -64,7 +64,7 @@ func (iu *invoiceUsecase) GetInvoiceStatusCount() (int64, int64, error) {
 	return i.Pending, i.Paid, nil
 }
 
-func (iu *invoiceUsecase) GetInvoicesPages(query string) (int64, error) {
+func (iu *invoiceUseCase) GetInvoicesPages(query string) (int64, error) {
 	count, err := iu.iq.GetInvoicesPages(context.Background(), query)
 	if err != nil {
 		return 0, err
@@ -72,7 +72,7 @@ func (iu *invoiceUsecase) GetInvoicesPages(query string) (int64, error) {
 	return count, nil
 }
 
-func (iu *invoiceUsecase) GetInvoiceById(invoiceId pgtype.UUID) (sqlc.GetInvoiceByIdRow, error) {
+func (iu *invoiceUseCase) GetInvoiceById(invoiceId pgtype.UUID) (sqlc.GetInvoiceByIdRow, error) {
 	invoice, err := iu.iq.GetInvoiceById(context.Background(), invoiceId)
 	if err != nil {
 		return sqlc.GetInvoiceByIdRow{}, err
@@ -81,7 +81,7 @@ func (iu *invoiceUsecase) GetInvoiceById(invoiceId pgtype.UUID) (sqlc.GetInvoice
 	return invoice, nil
 }
 
-func (iu *invoiceUsecase) CreateInvoice(invoice sqlc.Invoice) error {
+func (iu *invoiceUseCase) CreateInvoice(invoice sqlc.Invoice) error {
 	if err := iu.iv.InvoiceValidate(invoice); err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (iu *invoiceUsecase) CreateInvoice(invoice sqlc.Invoice) error {
 	return nil
 }
 
-func (iu *invoiceUsecase) UpdateInvoice(invoice sqlc.Invoice) error {
+func (iu *invoiceUseCase) UpdateInvoice(invoice sqlc.Invoice) error {
 	if err := iu.iv.InvoiceValidate(invoice); err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (iu *invoiceUsecase) UpdateInvoice(invoice sqlc.Invoice) error {
 	return nil
 }
 
-func (iu *invoiceUsecase) DeleteInvoice(invoiceId pgtype.UUID) error {
+func (iu *invoiceUseCase) DeleteInvoice(invoiceId pgtype.UUID) error {
 	if err := iu.iq.DeleteInvoice(context.Background(), invoiceId); err != nil {
 		return err
 	}
