@@ -30,7 +30,6 @@ type LoginResponse struct {
 	ID           pgtype.UUID `json:"id"`
 	Email        string      `json:"email"`
 	AccessToken  string      `json:"access_token"`
-	RefreshToken string      `json:"refresh_token"`
 }
 
 type UserResponse struct {
@@ -38,11 +37,6 @@ type UserResponse struct {
 	Name     string      `json:"name"`
 	Email    string      `json:"email"`
 	Password string      `json:"password"`
-}
-
-type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
 }
 
 func NewUserUseCase(uq sqlc.Querier, uv validator.UserValidator) UserUseCase {
@@ -96,21 +90,10 @@ func (uu *userUseCase) Login(user sqlc.User) (LoginResponse, error) {
 		return LoginResponse{}, err
 	}
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": storedUser.ID,
-		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(),
-	})
-
-	refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		return LoginResponse{}, err
-	}
-
 	resLogin := LoginResponse{
 		ID:           storedUser.ID,
 		Email:        storedUser.Email,
 		AccessToken:  tokenString,
-		RefreshToken: refreshTokenString,
 	}
 	return resLogin, nil
 }
