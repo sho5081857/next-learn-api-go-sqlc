@@ -1,19 +1,19 @@
 package validator
 
 import (
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-type IUserValidator interface {
+type UserValidator interface {
 	UserValidate(user sqlc.User) error
 }
 
 type userValidator struct{}
 
-func NewUserValidator() IUserValidator {
+func NewUserValidator() UserValidator {
 	return &userValidator{}
 }
 
