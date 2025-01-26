@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"next-learn-go-sqlc/db/sqlc"
+	"next-learn-go-sqlc/infrastructure/database/sqlc"
 	"next-learn-go-sqlc/validator"
 	"os"
 	"time"
@@ -14,17 +14,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type IUserUsecase interface {
+type UserUseCase interface {
 	SignUp(user sqlc.User) error
 	Login(user sqlc.User) (LoginResponse, error)
 	GetUserById(userId pgtype.UUID) (UserResponse, error)
 	GetUserByEmail(email string) (UserResponse, error)
-	RefreshToken(refreshTokenString string) (TokenResponse, error)
 }
 
-type userUsecase struct {
+type userUseCase struct {
 	uq sqlc.Querier
-	uv validator.IUserValidator
+	uv validator.UserValidator
 }
 
 type LoginResponse struct {
@@ -46,11 +45,11 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func NewUserUsecase(uq sqlc.Querier, uv validator.IUserValidator) IUserUsecase {
-	return &userUsecase{uq, uv}
+func NewUserUseCase(uq sqlc.Querier, uv validator.UserValidator) UserUseCase {
+	return &userUseCase{uq, uv}
 }
 
-func (uu *userUsecase) SignUp(user sqlc.User) error {
+func (uu *userUseCase) SignUp(user sqlc.User) error {
 	if err := uu.uv.UserValidate(user); err != nil {
 		return err
 	}
@@ -73,7 +72,7 @@ func (uu *userUsecase) SignUp(user sqlc.User) error {
 	return nil
 }
 
-func (uu *userUsecase) Login(user sqlc.User) (LoginResponse, error) {
+func (uu *userUseCase) Login(user sqlc.User) (LoginResponse, error) {
 
 	if err := uu.uv.UserValidate(user); err != nil {
 		return LoginResponse{}, err
@@ -116,7 +115,7 @@ func (uu *userUsecase) Login(user sqlc.User) (LoginResponse, error) {
 	return resLogin, nil
 }
 
-func (uu *userUsecase) GetUserById(userId pgtype.UUID) (UserResponse, error) {
+func (uu *userUseCase) GetUserById(userId pgtype.UUID) (UserResponse, error) {
 	ctx := context.Background()
 	user, err := uu.uq.GetUserById(ctx, userId)
 	if err != nil {
@@ -131,7 +130,7 @@ func (uu *userUsecase) GetUserById(userId pgtype.UUID) (UserResponse, error) {
 	return resUser, nil
 }
 
-func (uu *userUsecase) GetUserByEmail(email string) (UserResponse, error) {
+func (uu *userUseCase) GetUserByEmail(email string) (UserResponse, error) {
 	ctx := context.Background()
 	user, err := uu.uq.GetUserByEmail(ctx, email)
 	if err != nil {
@@ -144,34 +143,4 @@ func (uu *userUsecase) GetUserByEmail(email string) (UserResponse, error) {
 		Password: user.Password,
 	}
 	return resUser, nil
-}
-
-func (uu *userUsecase) RefreshToken(refreshTokenString string) (TokenResponse, error) {
-
-	token, err := jwt.Parse(refreshTokenString, func(token *jwt.Token) (any, error) {
-		return []byte(os.Getenv("SECRET")), nil
-	})
-	if err != nil {
-		return TokenResponse{}, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return TokenResponse{}, errors.New("invalid refresh token")
-	}
-
-	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": claims["user_id"],
-		"exp":     time.Now().Add(time.Hour * 12).Unix(),
-	})
-
-	newTokenString, err := newToken.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		return TokenResponse{}, err
-	}
-
-	return TokenResponse{
-		AccessToken:  newTokenString,
-		RefreshToken: refreshTokenString,
-	}, nil
 }
